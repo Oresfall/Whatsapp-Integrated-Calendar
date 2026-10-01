@@ -29,7 +29,7 @@ export async function parseTaskFromText(textMessage) {
   const today = new Date().toISOString().split('T')[0];
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: taskSchema,
@@ -42,3 +42,6 @@ export async function parseTaskFromText(textMessage) {
   const result = await model.generateContent(textMessage);
   return JSON.parse(result.response.text());
 }
+
+// Ekspor alias agar route webhook bisa memanggil parseIntentFromText
+export const parseIntentFromText = parseTaskFromText;
