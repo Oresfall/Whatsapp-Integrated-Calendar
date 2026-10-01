@@ -5,9 +5,17 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const taskSchema = {
   type: SchemaType.OBJECT,
   properties: {
+    action: {
+      type: SchemaType.STRING,
+      description: "Tentukan aksi yang diinginkan pengguna. Pilih salah satu dari: ADD, LIST, UPDATE, atau DELETE",
+    },
     title: { 
       type: SchemaType.STRING, 
-      description: "Nama atau deskripsi tugas/acara" 
+      description: "Nama atau deskripsi tugas/acara (digunakan untuk ADD atau UPDATE)" 
+    },
+    target_identifier: {
+      type: SchemaType.STRING,
+      description: "Nama tugas/kata kunci yang ingin diubah atau dihapus (digunakan untuk UPDATE atau DELETE)"
     },
     due_date: { 
       type: SchemaType.STRING, 
@@ -15,20 +23,19 @@ const taskSchema = {
     },
     due_time: { 
       type: SchemaType.STRING, 
-      description: "Waktu/jam tenggat dalam format HH:mm (24 jam), default '23:59' jika tidak ada" 
+      description: "Waktu/jam tenggat dalam format HH:mm (24 jam), default '23:59' jika tidak disebutkan" 
     },
     category: { 
       type: SchemaType.STRING, 
       description: "Kategori: Tugas, Rapat, Pengingat, atau Acara" 
     }
   },
-  required: ["title", "due_date"],
+  required: ["action"],
 };
 
 export async function parseTaskFromText(textMessage) {
   const today = new Date().toISOString().split('T')[0];
 
-  // Menggunakan urutan model aktif dari keluarga Gemini 3.x
   const modelsToTry = [
     "gemini-3.8-flash",
     "gemini-3.5-flash",
@@ -45,14 +52,17 @@ export async function parseTaskFromText(textMessage) {
         },
         systemInstruction: `Kamu adalah asisten pengenal jadwal kalender. 
         Hari ini adalah tanggal: ${today}. 
-        Ekstrak teks WhatsApp dari pengguna menjadi JSON jadwal yang akurat.`
+        Analisislah teks instruksi WhatsApp pengguna dan tentukan action-nya:
+        - ADD: Jika pengguna ingin menambah pengingat/tugas baru (contoh: "tambah tugas SPK hari ini jam 23.59").
+        - LIST: Jika pengguna ingin melihat daftar pengingat (contoh: "tampilkan daftar pengingat", "lihat jadwal").
+        - UPDATE: Jika pengguna ingin mengubah pengingat yang ada (contoh: "ubah tugas SPK jadi tanggal 12").
+        - DELETE: Jika pengguna ingin menghapus pengingat (contoh: "hapus tugas SPK").`
       });
 
       const result = await model.generateContent(textMessage);
       return JSON.parse(result.response.text());
     } catch (error) {
-      console.warn(`Model ${modelName} gagal (${error.message}), mencoba model cadangan berikutnya...`);
-      // Jika sudah di iterasi terakhir dan tetap gagal, lemparkan error
+      console.warn(`Model ${modelName} gagal (${error.message}), mencoba fallback berikutnya...`);
       if (modelName === modelsToTry[modelsToTry.length - 1]) {
         throw error;
       }
