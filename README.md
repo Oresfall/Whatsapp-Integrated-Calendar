@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WhatsApp-Integrated Calendar Web App
+Aplikasi kalender interaktif berbasis web yang terintegrasi langsung dengan WhatsApp. Pengguna dapat menjadwalkan tugas, jadwal, atau acara hanya dengan mengirimkan pesan teks berbahasa alami (*natural language*) melalui WhatsApp, yang kemudian diproses oleh AI dan ditampilkan secara otomatis pada antarmuka kalender web.
 
-## Getting Started
+---
 
-First, run the development server:
+## Fitur Utama
+- **NLP Task Parsing:** Mengubah pesan teks santai (contoh: *"Ingatkan kumpul tugas MPM besok jam 8 malam"*) menjadi data jadwal terstruktur menggunakan **Google Gemini API**.
+- **WhatsApp Webhook:** Menerima dan merespon pesan pengingat secara otomatis melalui WhatsApp Gateway.
+- **Dynamic Web Calendar:** Tampilan dasbor kalender interaktif yang menyajikan daftar tugas real-time dari database.
+- **Cloud Database:** Penyimpanan terpusat yang aman memanfaatkan **Supabase** dengan *Row Level Security* (RLS).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack & Infrastruktur
+| Komponen | Teknologi / Layanan |
+| --- | --- |
+| **Framework** | Next.js (App Router) |
+| **Database** | Supabase (PostgreSQL) |
+| **AI / Parsing Engine** | Google Gemini API (`gemini-1.5-flash`) |
+| **WhatsApp Gateway** | Fonnte / Baileys API |
+| **Deployment** | Vercel (Serverless Functions) |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Anggota Kelompok & Pembagian Peran
+- Muhammad Adhwa Putra Adhitama: Mengintegrasi Gemini API, handler Webhook WhatsApp, dan arsitektur database Supabase.
+- Irawan Jaya Negara:
+- Ghaza Amru:
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Skema Database (Supabase)
+```sql
+create table public.tasks (
+  id uuid default gen_random_uuid() primary key,
+  user_phone text not null,
+  title text not null,
+  due_date date not null,
+  due_time time default '23:59:00',
+  category text default 'Tugas',
+  is_completed boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
