@@ -29,7 +29,7 @@ export async function parseTaskFromText(textMessage) {
   const today = new Date().toISOString().split('T')[0];
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.8-flash", // Menggunakan model yang direkomendasikan log Vercel
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: taskSchema,
@@ -43,5 +43,4 @@ export async function parseTaskFromText(textMessage) {
   return JSON.parse(result.response.text());
 }
 
-// Ekspor alias agar route webhook bisa memanggil parseIntentFromText
 export const parseIntentFromText = parseTaskFromText;
