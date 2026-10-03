@@ -26,7 +26,7 @@ export default function DashboardPage() {
 
   // State Settings (Pengingat)
   const [reminderEnabled, setReminderEnabled] = useState(true);
-  const [reminderInterval, setReminderInterval] = useState("2");
+  const [reminderInterval, setReminderInterval] = useState("24"); // Default 24 jam (1x sehari)
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsStatus, setSettingsStatus] = useState("");
 
@@ -47,7 +47,7 @@ export default function DashboardPage() {
           const dataSettings = await resSettings.json();
           if (dataSettings.settings) {
             setReminderEnabled(dataSettings.settings.reminder_enabled);
-            setReminderInterval(String(dataSettings.settings.reminder_interval));
+            setReminderInterval(String(dataSettings.settings.reminder_interval || "24"));
           }
         }
       } catch (err) {
@@ -298,12 +298,17 @@ export default function DashboardPage() {
                   disabled={!reminderEnabled}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
                 >
-                  <option value="1">Setiap 1 Jam</option>
-                  <option value="2">Setiap 2 Jam</option>
-                  <option value="4">Setiap 4 Jam</option>
-                  <option value="12">Setiap 12 Jam (Pagi & Malam)</option>
-                  <option value="24">Sekali Sehari (Pagi jam 08.00)</option>
+                  <option value="24">Sekali Sehari (Setiap Pagi jam 08.00)</option>
                 </select>
+
+                {/* Banner Informasi Batasan Plan */}
+                <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs leading-relaxed flex items-start gap-2.5">
+                  <span className="text-base leading-none">⚠️</span>
+                  <div>
+                    <span className="font-semibold block mb-0.5">Batasan Server Gratisan:</span>
+                    Pengiriman otomatis saat ini dibatasi maksimal <strong>1 kali per hari</strong>. Fitur interval per jam akan diaktifkan setelah integrasi layanan cron eksternal.
+                  </div>
+                </div>
               </div>
 
               {settingsStatus && (
