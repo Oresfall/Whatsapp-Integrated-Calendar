@@ -58,8 +58,9 @@ export default function LoginPage() {
       }
 
       if (!res.ok) {
+        // Menggunakan data.error sesuai format penanganan error dari backend
         throw new Error(
-          data.message || "Gagal mengirimkan kode OTP. Silakan periksa kembali nomor Anda."
+          data.error || "Gagal mengirimkan kode OTP. Silakan periksa kembali nomor Anda."
         );
       }
 
@@ -97,7 +98,8 @@ export default function LoginPage() {
       }
 
       if (!res.ok) {
-        throw new Error(data.message || "Kode OTP tidak valid atau telah kedaluwarsa.");
+        // Menggunakan data.error sesuai format penanganan error dari backend
+        throw new Error(data.error || "Kode OTP tidak valid atau telah kedaluwarsa.");
       }
 
       router.push("/dashboard");
