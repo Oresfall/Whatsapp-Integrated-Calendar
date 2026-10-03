@@ -5,6 +5,11 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const taskSchema = {
   type: SchemaType.OBJECT,
   properties: {
+    action: {
+      type: SchemaType.STRING,
+      description: "Perintah/tindakan: ADD (tambah), LIST (lihat/tampilkan), UPDATE (ubah/edit), DELETE (hapus)",
+      enum: ["ADD", "LIST", "UPDATE", "DELETE"]
+    },
     title: { 
       type: SchemaType.STRING, 
       description: "Nama atau deskripsi tugas/acara" 
@@ -20,9 +25,13 @@ const taskSchema = {
     category: { 
       type: SchemaType.STRING, 
       description: "Kategori: Tugas, Rapat, Pengingat, atau Acara" 
+    },
+    target_identifier: {
+      type: SchemaType.STRING,
+      description: "Kata kunci nama tugas lama yang ingin diubah atau dihapus (khusus action UPDATE atau DELETE)"
     }
   },
-  required: ["title", "due_date"],
+  required: ["action"],
 };
 
 export async function parseTaskFromText(textMessage) {
@@ -48,13 +57,12 @@ export async function parseTaskFromText(textMessage) {
         },
         systemInstruction: `Kamu adalah asisten pengenal jadwal kalender. 
         Hari ini adalah tanggal: ${today}. 
-        Ekstrak teks WhatsApp dari pengguna menjadi JSON jadwal yang akurat.`
+        Ekstrak instruksi WhatsApp pengguna menjadi JSON jadwal yang akurat dengan menentukan atribut 'action' (ADD/LIST/UPDATE/DELETE).`
       });
 
       const result = await model.generateContent(textMessage);
       const responseText = result.response.text();
       
-      // Berhasil diekstrak, kembalikan JSON
       return JSON.parse(responseText);
     } catch (err) {
       console.warn(`Model ${modelName} gagal dipanggil (${err?.status || err?.message}), mencoba model berikutnya...`);
@@ -62,9 +70,7 @@ export async function parseTaskFromText(textMessage) {
     }
   }
 
-  // Jika semua model dalam list gagal
   throw new Error(`Semua model Gemini gagal memproses teks: ${lastError?.message || lastError}`);
 }
 
-// Ekspor alias agar route webhook bisa memanggil parseIntentFromText
 export const parseIntentFromText = parseTaskFromText;

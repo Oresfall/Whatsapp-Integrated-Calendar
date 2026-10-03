@@ -57,7 +57,8 @@ export async function POST(request) {
     let replyText = "";
 
     // 4. Tentukan logika berdasarkan perintah hasil keputusan AI
-    switch (parsed.action) {
+    const action = parsed.action || 'ADD';
+    switch (action) {
       case 'ADD': {
         const { data, error } = await supabaseAdmin
           .from('tasks')
